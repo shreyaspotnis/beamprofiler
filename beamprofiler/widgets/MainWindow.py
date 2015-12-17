@@ -5,6 +5,7 @@ from PyQt4.QtCore import QSignalMapper, QString, SIGNAL, SLOT
 import os
 
 from ipbec.widgets import ImageView, ImageBrowser, Fitter, RoiEditor, Plot1d
+from beamprofiler import cameras
 
 
 class MainWindow(QMainWindow):
@@ -21,6 +22,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.dock_area)
         self.setWindowTitle('')
 
+        self.camera = cameras.Camera()
+
         self.createDocks()
 
     def setWindowTitle(self, newTitle=''):
@@ -31,6 +34,7 @@ class MainWindow(QMainWindow):
     def createDocks(self):
         """Create all dock widgets and add them to DockArea."""
         self.image_view = ImageView(self.settings, self)
+        self.image_view.setImage(self.camera.getImage())
 
         self.roi_editor_h = RoiEditor(self.settings,
                                       self.image_view, self, name='ROIH',
