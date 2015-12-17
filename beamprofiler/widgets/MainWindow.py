@@ -4,8 +4,9 @@ from PyQt4.QtGui import QScrollArea, QAction, QMainWindow
 from PyQt4.QtCore import QSignalMapper, QString, SIGNAL, SLOT
 import os
 
-from ipbec.widgets import ImageView, ImageBrowser, Fitter, RoiEditor, Plot1d
+from ipbec.widgets import ImageView, ImageBrowser, RoiEditor, Plot1d
 from beamprofiler import cameras
+from beamprofiler.widgets.Fitter import Fitter
 
 
 class MainWindow(QMainWindow):
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
 
         self.createDocks()
         self.loadSettings()
+        self.connectSignalsToSlots()
 
     def setWindowTitle(self, newTitle=''):
         """Prepend IP-BEC to all window titles."""
@@ -35,7 +37,7 @@ class MainWindow(QMainWindow):
     def createDocks(self):
         """Create all dock widgets and add them to DockArea."""
         self.image_view = ImageView(self.settings, self)
-        self.image_view.setImage(self.camera.getImage())
+        self.fitter = Fitter(self.settings, self)
 
         self.roi_editor_h = RoiEditor(self.settings,
                                       self.image_view, self, name='ROIH',
@@ -55,7 +57,7 @@ class MainWindow(QMainWindow):
         self.dock_image_view = Dock('Image View', widget=self.image_view)
         # self.dock_image_browser = Dock('Image Browser',
         #                                widget=self.image_browser)
-        # self.dock_fitter = Dock('Fitter', widget=self.fitter)
+        self.dock_fitter = Dock('Fitter', widget=self.fitter)
         self.dock_roi_h = Dock('ROIH', widget=self.roi_editor_h)
         self.dock_roi_v = Dock('ROIV', widget=self.roi_editor_v)
         self.dock_roi_int = Dock('ROI Int', widget=self.roi_editor_int)
@@ -65,6 +67,8 @@ class MainWindow(QMainWindow):
         # self.dock_analyzer = Dock('Analyze', widget=self.analyzer)
 
         self.dock_area.addDock(self.dock_image_view, position='top')
+        self.dock_area.addDock(self.dock_fitter, position='left',
+                               relativeTo=self.dock_image_view)
         self.dock_area.addDock(self.dock_roi_h, position='bottom',
                                relativeTo=self.dock_image_view)
         self.dock_area.addDock(self.dock_roi_v, position='below',
@@ -75,8 +79,13 @@ class MainWindow(QMainWindow):
                                relativeTo=self.dock_image_view)
         self.dock_area.addDock(self.dock_roi_plot_v, position='right',
                                relativeTo=self.dock_roi_plot_h)
+
         # self.dock_area.addDock(self.dock_analyzer, position='top',
         #                        relativeTo=self.dock_image_browser)
+
+    def connectSignalsToSlots(self):
+        self.image_view.doubleClicked.connect(self.roi_editor_h.centerROI)
+        self.image_view.doubleClicked.connect(self.roi_editor_v.centerROI)
 
     def loadSettings(self):
         """Load window state from self.settings"""
