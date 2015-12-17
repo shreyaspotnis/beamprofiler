@@ -23,11 +23,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.dock_area)
         self.setWindowTitle('')
 
-        self.camera = cameras.Camera()
+        self.camera = cameras.SimulatedCamera(self)
 
         self.createDocks()
         self.loadSettings()
         self.connectSignalsToSlots()
+
+        # self.fitter.handleImageChanged(self.camera.getImage())
 
     def setWindowTitle(self, newTitle=''):
         """Prepend IP-BEC to all window titles."""
@@ -86,6 +88,16 @@ class MainWindow(QMainWindow):
     def connectSignalsToSlots(self):
         self.image_view.doubleClicked.connect(self.roi_editor_h.centerROI)
         self.image_view.doubleClicked.connect(self.roi_editor_v.centerROI)
+
+        self.roi_editor_h.roiChanged.connect(self.fitter.handleROIHChanged)
+        self.roi_editor_v.roiChanged.connect(self.fitter.handleROIVChanged)
+        self.roi_editor_int.roiChanged.connect(self.fitter.handleROIIntChanged)
+
+        self.fitter.imageChanged.connect(self.image_view.handleImageChanged)
+        self.fitter.horDataChanged.connect(self.roi_plot_h.handleDataChanged)
+        self.fitter.verDataChanged.connect(self.roi_plot_v.handleDataChanged)
+
+        self.camera.imageAcquired.connect(self.fitter.handleImageChanged)
 
     def loadSettings(self):
         """Load window state from self.settings"""
