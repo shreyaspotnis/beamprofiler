@@ -23,7 +23,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.dock_area)
         self.setWindowTitle('')
 
-        self.camera = cameras.SimulatedCamera(self)
+        # self.camera = cameras.SimulatedCamera(self)
+        self.camera = cameras.WebCam(self)
 
         self.createDocks()
         self.loadSettings()

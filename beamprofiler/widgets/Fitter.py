@@ -35,8 +35,17 @@ class Fitter(QWidget, Ui_Fitter):
         self.has_roi_h = False
         self.has_roi_v = False
         self.has_roi_int = False
+        self.is_playing = True
 
         self.setupUi(self)
+
+    def handlePlayPause(self):
+        if self.is_playing:
+            self.is_playing = False
+            self.pushPlayPause.setText('Play')
+        else:
+            self.is_playing = True
+            self.pushPlayPause.setText('Pause')
 
     def populateFitTypes(self):
         """Populate Fit Type selector with available fitting functions.
@@ -64,6 +73,8 @@ class Fitter(QWidget, Ui_Fitter):
         enabled, handles guessing, transfer or fitting. Finally emits the image
         for image_view to update.
         """
+        if self.is_playing is False:
+            return
         self.is_fitted = False
         self.current_image = new_image
         if not self.initialized:
