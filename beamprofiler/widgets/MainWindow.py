@@ -25,6 +25,7 @@ class MainWindow(QMainWindow):
         self.camera = cameras.Camera()
 
         self.createDocks()
+        self.loadSettings()
 
     def setWindowTitle(self, newTitle=''):
         """Prepend IP-BEC to all window titles."""
@@ -76,3 +77,38 @@ class MainWindow(QMainWindow):
                                relativeTo=self.dock_roi_plot_h)
         # self.dock_area.addDock(self.dock_analyzer, position='top',
         #                        relativeTo=self.dock_image_browser)
+
+    def loadSettings(self):
+        """Load window state from self.settings"""
+
+        self.settings.beginGroup('mainwindow')
+        geometry = self.settings.value('geometry').toByteArray()
+        state = self.settings.value('windowstate').toByteArray()
+        dock_string = str(self.settings.value('dockstate').toString())
+        if dock_string is not "":
+            dock_state = eval(dock_string)
+            self.dock_area.restoreState(dock_state)
+        self.settings.endGroup()
+
+        self.restoreGeometry(geometry)
+        self.restoreState(state)
+
+    def saveSettings(self):
+        """Save window state to self.settings."""
+        self.settings.beginGroup('mainwindow')
+        self.settings.setValue('geometry', self.saveGeometry())
+        self.settings.setValue('windowstate', self.saveState())
+        dock_state = self.dock_area.saveState()
+        # dock_state returned here is a python dictionary. Coundn't find a good
+        # way to save dicts in QSettings, hence just using representation
+        # of it.
+        self.settings.setValue('dockstate', repr(dock_state))
+        self.settings.endGroup()
+
+    def closeEvent(self, event):
+        self.saveSettings()
+        self.roi_editor_int.saveSettings()
+        self.roi_editor_v.saveSettings()
+        self.roi_editor_h.saveSettings()
+        super(MainWindow, self).closeEvent(event)
+
